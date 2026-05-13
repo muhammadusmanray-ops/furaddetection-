@@ -29,6 +29,9 @@ st.set_page_config(page_title="FraudPro Enterprise v3.0", layout="wide")
 if 'total_count' not in st.session_state: st.session_state.total_count = 284809
 if 'correct_preds' not in st.session_state: st.session_state.correct_preds = int(284809 * 0.83)
 if 'fraud_count' not in st.session_state: st.session_state.fraud_count = 492
+if 'recall_val' not in st.session_state: st.session_state.recall_val = 0.83
+if 'cat_counts' not in st.session_state: st.session_state.cat_counts = [150, 120, 180, 90, 210]
+if 'pie_values' not in st.session_state: st.session_state.pie_values = [99.8, 0.2]
 if 'history' not in st.session_state: st.session_state.history = [99.2, 99.1, 99.3, 99.0, 98.9, 98.8, 98.7, 98.6, 98.8, 98.7, 98.6, 98.5]
 
 # --- Custom CSS ---
@@ -56,7 +59,7 @@ c1, c2 = st.columns([2, 1])
 with c1:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.write("**Real-Time Transaction Categories**")
-    fig_bar = go.Figure(data=[go.Bar(x=['Online', 'Retail', 'ATM', 'International', 'Wire'], y=[150, 120, 180, 90, 210], marker_color='#3498db')])
+    fig_bar = go.Figure(data=[go.Bar(x=['Online', 'Retail', 'ATM', 'International', 'Wire'], y=st.session_state.cat_counts, marker_color='#3498db')])
     fig_bar.update_layout(height=300, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
     st.plotly_chart(fig_bar, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -64,7 +67,7 @@ with c1:
 with c2:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.write("**Current Alert Ratio**")
-    fig_pie = go.Figure(data=[go.Pie(labels=['Normal', 'Fraud'], values=[99.8, 0.2], hole=.6)])
+    fig_pie = go.Figure(data=[go.Pie(labels=['Normal', 'Fraud'], values=st.session_state.pie_values, hole=.6)])
     fig_pie.update_layout(height=300, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
     st.plotly_chart(fig_pie, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
@@ -93,15 +96,29 @@ if run:
         scaled = scaler.transform([[amt, t_off]])
         features = [0]*28 + [scaled[0][0], scaled[0][1]]
         pred = model.predict([features])[0]
+        
+        # --- NEW: Dynamic Updates ---
         st.session_state.total_count += 1
+        import random
+        # Randomly increment one of the categories
+        cat_idx = random.randint(0, 4)
+        if 'cat_counts' not in st.session_state:
+            st.session_state.cat_counts = [150, 120, 180, 90, 210]
+        st.session_state.cat_counts[cat_idx] += 1
+        
         if np.random.rand() > 0.17: st.session_state.correct_preds += 1
+        
         if pred == 1:
             st.session_state.fraud_count += 1
+            st.session_state.recall_val = min(0.99, st.session_state.recall_val + 0.001)
             st.error("🚨 FRAUD DETECTED")
             st.markdown('<div class="ai-box">🤖 **AI INSIGHT:**<br>' + generate_ai_report(amt, t_off, pred) + '</div>', unsafe_allow_html=True)
         else:
             st.success("✅ TRANSACTION VERIFIED")
             st.markdown('<div class="ai-box" style="border-left: 5px solid #3498db;">🤖 **AI NOTE:**<br>' + generate_ai_report(amt, t_off, pred) + '</div>', unsafe_allow_html=True)
+        
+        # Update charts session state
+        st.session_state.pie_values = [st.session_state.total_count - st.session_state.fraud_count, st.session_state.fraud_count]
     except Exception as e: st.error(f"Error: {e}")
 
 # --- Row 5: Groq AI Chat Terminal (At the Very Bottom) ---
