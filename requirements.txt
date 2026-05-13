@@ -1,7 +1,12 @@
+streamlit
 pandas
 numpy
 scikit-learn
-imblearn
 joblib
-streamlit
+plotly
 google-generativeai
+groq
+xgboost
+matplotlib
+seaborn
+imbalanced-learn
