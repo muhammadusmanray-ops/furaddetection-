@@ -1,0 +1,22 @@
+# Data Files (Too large for GitHub)
+*.csv
+*.zip
+*.rar
+
+# AI Keys & Sensitive Info
+.env
+.streamlit/
+secret.txt
+keys.txt
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Notebook Checkpoints
+.ipynb_checkpoints
