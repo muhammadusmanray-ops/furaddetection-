@@ -83,8 +83,8 @@ st.markdown('</div>', unsafe_allow_html=True)
 st.subheader("🔍 New Transaction Inference")
 with st.form("test_form"):
     f1, f2, f3 = st.columns([2, 2, 1])
-    with f1: amt = st.number_input("Amount ($)", value=0.0)
-    with f2: t_off = st.number_input("Time Offset", value=0.0)
+    with f1: amt = st.number_input("💰 Transaction Amount ($)", value=0.0, help="Enter the total value of the transaction in Dollars.")
+    with f2: t_off = st.number_input("⏱️ Time Since First Transaction", value=0.0, help="Enter the seconds elapsed since the very first record in the system (0 - 172,792).")
     with f3: st.markdown("<br>", unsafe_allow_html=True); run = st.form_submit_button("ANALYZE")
 
 if run:
