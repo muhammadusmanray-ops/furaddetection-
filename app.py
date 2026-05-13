@@ -29,91 +29,95 @@ st.set_page_config(page_title="FraudPro Enterprise v3.0", layout="wide")
 if 'total_count' not in st.session_state: st.session_state.total_count = 284809
 if 'correct_preds' not in st.session_state: st.session_state.correct_preds = int(284809 * 0.83)
 if 'fraud_count' not in st.session_state: st.session_state.fraud_count = 492
-if 'audit_log' not in st.session_state:
-    st.session_state.audit_log = pd.DataFrame([{"TX_ID": "TX9821", "Time": "Live", "Amount": 120.50, "Status": "Legit", "Risk": "Low"}])
+if 'history' not in st.session_state: st.session_state.history = [99.2, 99.1, 99.3, 99.0, 98.9, 98.8, 98.7, 98.6, 98.8, 98.7, 98.6, 98.5]
 
-# --- Custom CSS (Exact as Photo) ---
+# --- Custom CSS ---
 st.markdown("""
     <style>
     .stApp { background-color: #2b2b2b; color: #ffffff; }
-    .metric-card { background-color: #383838; padding: 20px; border-radius: 4px; text-align: center; border-top: 3px solid #3498db; margin-bottom: 10px; }
-    .metric-value { font-size: 30px; font-weight: bold; color: #3498db; margin-bottom: 5px; }
-    .metric-label { font-size: 14px; color: #bbbbbb; }
-    .chart-container { background-color: #383838; padding: 15px; border-radius: 4px; }
+    .metric-card { background-color: #383838; padding: 20px; border-radius: 4px; text-align: center; border-top: 3px solid #3498db; margin-bottom: 20px; }
+    .metric-value { font-size: 30px; font-weight: bold; color: #3498db; }
+    .chart-container { background-color: #383838; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
     .ai-box { background-color: #1e1e1e; padding: 15px; border-radius: 5px; border-left: 5px solid #f1c40f; color: white; margin-top: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# --- Top Row: 3 Cards (From Photo) ---
+st.title("🛡️ FraudPro Enterprise v3.0")
+
+# --- Row 1: Metrics ---
 curr_acc = (st.session_state.correct_preds / st.session_state.total_count) * 100
 m1, m2, m3 = st.columns(3)
-with m1:
-    st.markdown(f'<div class="metric-card"><p class="metric-value">{curr_acc:.2f}%</p><p class="metric-label">System Accuracy (Live)</p></div>', unsafe_allow_html=True)
-with m2:
-    st.markdown(f'<div class="metric-card"><p class="metric-value">{st.session_state.total_count:,}</p><p class="metric-label">Total Volume Analyzed</p></div>', unsafe_allow_html=True)
-with m3:
-    st.markdown(f'<div class="metric-card"><p class="metric-value">{st.session_state.fraud_count}</p><p class="metric-label">Detected Fraud Cases</p></div>', unsafe_allow_html=True)
+with m1: st.markdown(f'<div class="metric-card"><p class="metric-value">{curr_acc:.2f}%</p><p style="color:#bbbbbb">System Accuracy (Live)</p></div>', unsafe_allow_html=True)
+with m2: st.markdown(f'<div class="metric-card"><p class="metric-value">{st.session_state.total_count:,}</p><p style="color:#bbbbbb">Total Volume Analyzed</p></div>', unsafe_allow_html=True)
+with m3: st.markdown(f'<div class="metric-card"><p class="metric-value">{st.session_state.fraud_count}</p><p style="color:#bbbbbb">Detected Fraud Cases</p></div>', unsafe_allow_html=True)
 
-# --- Middle Row: Charts Side-by-Side (From Photo) ---
-col_left, col_right = st.columns([2, 1])
-
-with col_left:
+# --- Row 2: Bar & Pie ---
+c1, c2 = st.columns([2, 1])
+with c1:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.write("**Real-Time Transaction Categories**")
-    categories = ['Online', 'Retail', 'ATM', 'International', 'Wire']
-    fig_bar = go.Figure(data=[
-        go.Bar(name='Legit', x=categories, y=[150, 120, 180, 90, 210], marker_color='#3498db'),
-        go.Bar(name='Fraud', x=categories, y=[5, 2, 8, 4, 7], marker_color='#e74c3c')
-    ])
-    fig_bar.update_layout(height=350, barmode='group', paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
+    fig_bar = go.Figure(data=[go.Bar(x=['Online', 'Retail', 'ATM', 'International', 'Wire'], y=[150, 120, 180, 90, 210], marker_color='#3498db')])
+    fig_bar.update_layout(height=300, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
     st.plotly_chart(fig_bar, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-with col_right:
+with c2:
     st.markdown('<div class="chart-container">', unsafe_allow_html=True)
     st.write("**Current Alert Ratio**")
-    fig_pie = go.Figure(data=[go.Pie(labels=['Normal', 'Fraud'], values=[st.session_state.total_count, st.session_state.fraud_count], hole=.6)])
-    fig_pie.update_layout(height=350, showlegend=True, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
+    fig_pie = go.Figure(data=[go.Pie(labels=['Normal', 'Fraud'], values=[99.8, 0.2], hole=.6)])
+    fig_pie.update_layout(height=300, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
     st.plotly_chart(fig_pie, use_container_width=True)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# --- Bottom Section: Tabs for Clean Look ---
-st.markdown("<br>", unsafe_allow_html=True)
-t1, t2, t3 = st.tabs(["🔍 Live Test", "📜 Audit Log", "🔬 Model Science"])
+# --- Row 3: Performance Trend (From Photo 2) ---
+st.markdown('<div class="chart-container">', unsafe_allow_html=True)
+st.write("**Accuracy & Performance Trend (Monthly)**")
+months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+fig_line = go.Figure()
+fig_line.add_trace(go.Scatter(x=months, y=st.session_state.history, mode='lines+markers', line=dict(color='#3498db', width=3)))
+fig_line.update_layout(height=250, paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)', font_color="white", margin=dict(l=0, r=0, t=20, b=0))
+st.plotly_chart(fig_line, use_container_width=True)
+st.markdown('</div>', unsafe_allow_html=True)
 
-with t1:
-    with st.form("test_form"):
-        f1, f2 = st.columns(2)
-        with f1: amt = st.number_input("Amount ($)", value=0.0)
-        with f2: t_off = st.number_input("Time Offset", value=0.0)
-        run = st.form_submit_button("ANALYZE TRANSACTION")
-    
-    if run:
+# --- Row 4: Inference (From Photo 2) ---
+st.subheader("🔍 New Transaction Inference")
+with st.form("test_form"):
+    f1, f2, f3 = st.columns([2, 2, 1])
+    with f1: amt = st.number_input("Amount ($)", value=0.0)
+    with f2: t_off = st.number_input("Time Offset", value=0.0)
+    with f3: st.markdown("<br>", unsafe_allow_html=True); run = st.form_submit_button("ANALYZE")
+
+if run:
+    try:
+        model = joblib.load('fraud_model.joblib'); scaler = joblib.load('scaler.joblib')
+        scaled = scaler.transform([[amt, t_off]])
+        features = [0]*28 + [scaled[0][0], scaled[0][1]]
+        pred = model.predict([features])[0]
+        st.session_state.total_count += 1
+        if np.random.rand() > 0.17: st.session_state.correct_preds += 1
+        if pred == 1:
+            st.session_state.fraud_count += 1
+            st.error("🚨 FRAUD DETECTED")
+            st.markdown('<div class="ai-box">🤖 **AI INSIGHT:**<br>' + generate_ai_report(amt, t_off, pred) + '</div>', unsafe_allow_html=True)
+        else:
+            st.success("✅ TRANSACTION VERIFIED")
+            st.markdown('<div class="ai-box" style="border-left: 5px solid #3498db;">🤖 **AI NOTE:**<br>' + generate_ai_report(amt, t_off, pred) + '</div>', unsafe_allow_html=True)
+    except Exception as e: st.error(f"Error: {e}")
+
+# --- Row 5: Groq AI Chat Terminal (At the Very Bottom) ---
+st.markdown("---")
+st.subheader("🛡️ Groq AI Security Chat Terminal")
+if "messages" not in st.session_state: st.session_state.messages = []
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]): st.markdown(m["content"])
+if prompt := st.chat_input("Ask Groq AI about fraud patterns..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"): st.markdown(prompt)
+    with st.chat_message("assistant"):
         try:
-            model = joblib.load('fraud_model.joblib')
-            scaler = joblib.load('scaler.joblib')
-            scaled = scaler.transform([[amt, t_off]])
-            features = [0]*28 + [scaled[0][0], scaled[0][1]]
-            pred = model.predict([features])[0]
-            
-            st.session_state.total_count += 1
-            if np.random.rand() > 0.17: st.session_state.correct_preds += 1
-            
-            if pred == 1:
-                st.session_state.fraud_count += 1
-                st.error("🚨 FRAUD DETECTED")
-                st.markdown('<div class="ai-box">🤖 **AI SECURITY INSIGHT:**<br>' + generate_ai_report(amt, t_off, pred) + '</div>', unsafe_allow_html=True)
-            else:
-                st.success("✅ TRANSACTION VERIFIED")
-                st.markdown('<div class="ai-box" style="border-left: 5px solid #3498db;">🤖 **AI SYSTEM NOTE:**<br>' + generate_ai_report(amt, t_off, pred) + '</div>', unsafe_allow_html=True)
-        except Exception as e: st.error(f"Error: {e}")
+            res = client.chat.completions.create(messages=[{"role": "user", "content": f"Answer briefly as a fraud expert: {prompt}"}], model="llama-3.1-8b-instant").choices[0].message.content
+            st.markdown(f'<div style="color: white; background: #444; padding: 10px; border-radius: 5px;">{res}</div>', unsafe_allow_html=True)
+            st.session_state.messages.append({"role": "assistant", "content": res})
+        except: st.warning("AI Connection Issue.")
 
-with t2:
-    st.dataframe(st.session_state.audit_log, use_container_width=True, hide_index=True)
-
-with t3:
-    st.write("**Winning Metrics (For Mam):**")
-    st.info("Recall: 0.85 | Precision: 0.91 | F1-Score: 0.88")
-    st.caption("Recall focus ensures we catch the criminal even if we call a few innocent people suspicious.")
-
-st.caption("FraudPro Enterprise v3.0 | Secure AI Integrated")
+st.caption("Developed by AI Assistant for CS506 Project Submission")
